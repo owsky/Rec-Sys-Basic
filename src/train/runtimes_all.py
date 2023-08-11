@@ -34,14 +34,14 @@ def runtimes_all(dataset: coo_array):
     sparse_svd = MF_SVD_all()
 
     models = [
-        # (dense_sgd, DenseStochasticParams, "Dense SGD"),
-        # (dense_batch, DenseBatchParams, "Dense Batch"),
-        # (dense_mini_batch, DenseMiniBatchParams, "Dense Mini Batch"),
+        (dense_sgd, DenseStochasticParams, "Dense SGD"),
+        (dense_batch, DenseBatchParams, "Dense Batch"),
+        (dense_mini_batch, DenseMiniBatchParams, "Dense Mini Batch"),
         (dense_svd, DenseSVDParams, "Dense SVD"),
-        # (sparse_sgd, SparseStochasticParams, "Sparse SGD"),
-        # (sparse_batch, SparseBatchParams, "Sparse Batch"),
-        # (sparse_mini_batch, SparseMiniBatchParams, "Sparse Mini Batch"),
-        # (sparse_svd, SparseSVDParams, "Sparse SVD"),
+        (sparse_sgd, SparseStochasticParams, "Sparse SGD"),
+        (sparse_batch, SparseBatchParams, "Sparse Batch"),
+        (sparse_mini_batch, SparseMiniBatchParams, "Sparse Mini Batch"),
+        (sparse_svd, SparseSVDParams, "Sparse SVD"),
     ]
 
     results = map(

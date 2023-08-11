@@ -1,11 +1,10 @@
 import numpy as np
-import pandas as pd
 from os import path
 from scipy.sparse import coo_array, vstack
 import h5py
 
 
-def load_data(dataset_path: str, limit_row: int = -1):
+def load_data_sparse(dataset_path: str, limit_row: int = -1):
     lim = f"lim_{limit_row}" if limit_row != -1 else ""
     file_name = f"data_{lim}.h5"
     h5_path = path.join(path.dirname(dataset_path), file_name)

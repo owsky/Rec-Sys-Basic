@@ -7,37 +7,31 @@ from MF_models import *
 def hyper_tune(dataset: coo_array):
     R = dataset.toarray()
 
-    dense_sgd = MF_GD_dense()
-    dense_batch = MF_GD_dense()
-    dense_mini_batch = MF_GD_dense()
-    dense_svd = MF_SVD_dense()
-    sparse_sgd = MF_GD_sparse()
-    sparse_batch = MF_GD_sparse()
-    sparse_mini_batch = MF_GD_sparse()
-    sparse_svd = MF_SVD_sparse()
+    dense_sgd = MF_GD_all()
+    dense_batch = MF_GD_all()
+    dense_mini_batch = MF_GD_all()
+    dense_svd = MF_SVD_all()
+    sparse_sgd = MF_GD_all()
+    sparse_batch = MF_GD_all()
+    sparse_mini_batch = MF_GD_all()
+    sparse_svd = MF_SVD_all()
 
-    models: list[tuple[all_models_type, str]] = [
-        # (dense_sgd, "Dense SGD"),
+    models: list[tuple[MF_SVD_all | MF_GD_all, str]] = [
+        (dense_sgd, "Dense SGD"),
         (dense_batch, "Dense Batch"),
-        # (dense_mini_batch, "Dense Mini Batch"),
-        # (dense_svd, "Dense SVD"),
-        # (sparse_sgd, "Sparse SGD"),
-        # (sparse_batch, "Sparse Batch"),
-        # (sparse_mini_batch, "Sparse Mini Batch"),
-        # (sparse_svd, "Sparse SVD"),
+        (dense_mini_batch, "Dense Mini Batch"),
+        (dense_svd, "Dense SVD"),
+        (sparse_sgd, "Sparse SGD"),
+        (sparse_batch, "Sparse Batch"),
+        (sparse_mini_batch, "Sparse Mini Batch"),
+        (sparse_svd, "Sparse SVD"),
     ]
 
-    # n_factors_range = np.arange(1, 10)
-    # epochs_range = [30]
-    # lr_range = [0.009]
-    # reg_range = [0.002]
-    # batch_size_range = [8]
-    n_factors_range = np.random.choice(np.arange(1, 30), 7, replace=False)
-    lr_range = np.linspace(0.009, 0.07, num=7)
-    epochs_range = np.random.choice(np.arange(20, 80), 7, replace=False)
-    reg_range = np.linspace(0.0009, 0.009, num=7)
-    batch_size_range = []
-    # batch_size_range = [2, 4, 8, 16, 32]
+    n_factors_range = np.random.choice(np.arange(1, 30), 4, replace=False)
+    lr_range = np.linspace(0.009, 0.07, num=4)
+    epochs_range = np.random.choice(np.arange(20, 80), 4, replace=False)
+    reg_range = np.linspace(0.0009, 0.009, num=4)
+    batch_size_range = [2, 4, 8, 16, 32]
 
     for index, tup in enumerate(models):
         model, label = tup
@@ -45,6 +39,7 @@ def hyper_tune(dataset: coo_array):
         b_range = [] if not "Mini Batch" in label else batch_size_range
         cv_results = cross_validate(
             model=model,
+            label=label,
             R=R,
             n_factors_range=n_factors_range,
             lr_range=lr_range,
