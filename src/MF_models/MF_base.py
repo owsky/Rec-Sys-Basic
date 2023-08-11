@@ -23,6 +23,7 @@ class MF_base(ABC):
         epochs: int = 20,
         reg: float = 0.02,
         batch_size: int = 0,
+        seed: int | None = None,
     ):
         pass
 

@@ -9,9 +9,13 @@ from MF_models import *
 from .default_params import *
 
 
-def aux(model, hyper_params, label, trainset, testset):
-    trainset = convert_dataset(trainset, model)
-    return label, *runtime(lambda: train_test(model, hyper_params, trainset, testset))
+def aux(model, hyper_params, label: str, trainset, testset):
+    trainset = convert_dataset(trainset, label)
+    return label, *runtime(
+        lambda: train_test(
+            model, hyper_params, trainset=trainset, testset=testset, seed=42
+        )
+    )
 
 
 def runtimes_all(dataset: coo_array):
@@ -20,24 +24,24 @@ def runtimes_all(dataset: coo_array):
     )
     testset = testset.toarray()
 
-    dense_sgd = MF_GD_dense()
-    dense_batch = MF_GD_dense()
-    dense_mini_batch = MF_GD_dense()
-    dense_svd = MF_SVD_dense()
-    sparse_sgd = MF_GD_sparse()
-    sparse_batch = MF_GD_sparse()
-    sparse_mini_batch = MF_GD_sparse()
-    sparse_svd = MF_SVD_sparse()
+    dense_sgd = MF_GD_all()
+    dense_batch = MF_GD_all()
+    dense_mini_batch = MF_GD_all()
+    dense_svd = MF_SVD_all()
+    sparse_sgd = MF_GD_all()
+    sparse_batch = MF_GD_all()
+    sparse_mini_batch = MF_GD_all()
+    sparse_svd = MF_SVD_all()
 
     models = [
-        (dense_sgd, DenseStochasticParams, "Dense SGD"),
-        (dense_batch, DenseBatchParams, "Dense Batch"),
-        (dense_mini_batch, DenseMiniBatchParams, "Dense Mini Batch"),
+        # (dense_sgd, DenseStochasticParams, "Dense SGD"),
+        # (dense_batch, DenseBatchParams, "Dense Batch"),
+        # (dense_mini_batch, DenseMiniBatchParams, "Dense Mini Batch"),
         (dense_svd, DenseSVDParams, "Dense SVD"),
-        (sparse_sgd, SparseStochasticParams, "Sparse SGD"),
-        (sparse_batch, SparseBatchParams, "Sparse Batch"),
-        (sparse_mini_batch, SparseMiniBatchParams, "Sparse Mini Batch"),
-        (sparse_svd, SparseSVDParams, "Sparse SVD"),
+        # (sparse_sgd, SparseStochasticParams, "Sparse SGD"),
+        # (sparse_batch, SparseBatchParams, "Sparse Batch"),
+        # (sparse_mini_batch, SparseMiniBatchParams, "Sparse Mini Batch"),
+        # (sparse_svd, SparseSVDParams, "Sparse SVD"),
     ]
 
     results = map(

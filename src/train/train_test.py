@@ -9,6 +9,10 @@ def train_test(
     hyper_params,
     trainset: NDArray[np.float64] | coo_matrix | dok_array | csr_matrix,
     testset: NDArray[np.float64],
+    seed: int | None = None,
 ):
-    model.fit(trainset, *hyper_params)
+    if seed != None:
+        model.fit(trainset, *hyper_params, seed=seed)
+    else:
+        model.fit(trainset, *hyper_params)
     return model.accuracy_mae(testset), model.accuracy_rmse(testset)

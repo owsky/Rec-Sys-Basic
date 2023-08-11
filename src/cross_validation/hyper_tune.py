@@ -1,32 +1,63 @@
 from .cross_validate import cross_validate
-
 from scipy.sparse import coo_array
+import numpy as np
+from MF_models import *
 
 
 def hyper_tune(dataset: coo_array):
     R = dataset.toarray()
 
-    model_classes = []
+    dense_sgd = MF_GD_dense()
+    dense_batch = MF_GD_dense()
+    dense_mini_batch = MF_GD_dense()
+    dense_svd = MF_SVD_dense()
+    sparse_sgd = MF_GD_sparse()
+    sparse_batch = MF_GD_sparse()
+    sparse_mini_batch = MF_GD_sparse()
+    sparse_svd = MF_SVD_sparse()
 
-    n_factors_range = [10, 12, 15]
-    lr_range = [0.00005, 0.00003, 0.00001]
-    epochs_range = [20, 30, 40, 50, 70, 80]
-    reg_range = [0.01, 0.02, 0.03, 0.04]
-    batch_size_range = [600, 1000, 1500]
+    models: list[tuple[all_models_type, str]] = [
+        # (dense_sgd, "Dense SGD"),
+        (dense_batch, "Dense Batch"),
+        # (dense_mini_batch, "Dense Mini Batch"),
+        # (dense_svd, "Dense SVD"),
+        # (sparse_sgd, "Sparse SGD"),
+        # (sparse_batch, "Sparse Batch"),
+        # (sparse_mini_batch, "Sparse Mini Batch"),
+        # (sparse_svd, "Sparse SVD"),
+    ]
 
-    for index, model_class in enumerate(model_classes):
-        print(
-            f"{index+1}/{len(model_classes)} - Looking for best params for {model_class.__name__}"
-        )
-        best_params = cross_validate(
-            model_cls=model_class,
+    # n_factors_range = np.arange(1, 10)
+    # epochs_range = [30]
+    # lr_range = [0.009]
+    # reg_range = [0.002]
+    # batch_size_range = [8]
+    n_factors_range = np.random.choice(np.arange(1, 30), 7, replace=False)
+    lr_range = np.linspace(0.009, 0.07, num=7)
+    epochs_range = np.random.choice(np.arange(20, 80), 7, replace=False)
+    reg_range = np.linspace(0.0009, 0.009, num=7)
+    batch_size_range = []
+    # batch_size_range = [2, 4, 8, 16, 32]
+
+    for index, tup in enumerate(models):
+        model, label = tup
+        print(f"{index+1}/{len(models)} - Looking for best params for {label}")
+        b_range = [] if not "Mini Batch" in label else batch_size_range
+        cv_results = cross_validate(
+            model=model,
             R=R,
             n_factors_range=n_factors_range,
             lr_range=lr_range,
             epochs_range=epochs_range,
             reg_range=reg_range,
+            batch_size_range=b_range,
             n_folds=3,
-            n_jobs=-1,
-            batch_size_range=batch_size_range,
         )
-        print(f"Best params for {model_class.__name__}: {best_params}")
+
+        if cv_results is None:
+            print(
+                f"All hyper-parameters combinations for {label} resulted in overflows"
+            )
+        else:
+            best_params, mae, rmse = cv_results
+            print(f"Best params for {label}: {best_params}, MAE: {mae}, RMSE: {rmse}")

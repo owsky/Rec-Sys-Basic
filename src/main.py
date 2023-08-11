@@ -1,6 +1,4 @@
-from functools import reduce
 import sys
-
 from data import load_data
 from train import runtimes_all
 from cross_validation import hyper_tune
