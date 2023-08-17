@@ -27,10 +27,10 @@ def hyper_tune(dataset: coo_array):
         (sparse_svd, "Sparse SVD"),
     ]
 
-    n_factors_range = np.random.choice(np.arange(1, 30), 4, replace=False)
-    lr_range = np.linspace(0.009, 0.07, num=4)
-    epochs_range = np.random.choice(np.arange(20, 80), 4, replace=False)
-    reg_range = np.linspace(0.0009, 0.009, num=4)
+    n_factors_range = np.random.choice(np.arange(1, 30), 4, replace=False).tolist()
+    lr_range = np.linspace(0.009, 0.07, num=4).tolist()
+    epochs_range = np.random.choice(np.arange(20, 80), 4, replace=False).tolist()
+    reg_range = np.linspace(0.0009, 0.009, num=4).tolist()
     batch_size_range = [2, 4, 8, 16, 32]
 
     for index, tup in enumerate(models):

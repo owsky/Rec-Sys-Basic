@@ -3,10 +3,10 @@ import numpy as np
 from numpy.typing import NDArray
 from abc import ABC, abstractmethod
 from typing import List, Callable
-from scipy.sparse import coo_matrix, dok_array, csr_matrix
+from scipy.sparse import coo_array
 
 
-R_type = NDArray[np.float64] | coo_matrix | dok_array | csr_matrix
+R_type = NDArray[np.float64] | coo_array
 
 
 class MF_base(ABC):
@@ -60,3 +60,29 @@ class MF_base(ABC):
         )
         rmse = math.sqrt(np.mean(errors))
         return rmse
+
+    def _clip_gradients(
+        self, gradient: NDArray[np.float64], max_grad_norm: float | None
+    ):
+        if max_grad_norm is not None:
+            norm = np.linalg.norm(gradient)
+            if norm > max_grad_norm:
+                gradient *= max_grad_norm / norm
+
+    def _update_features(
+        self,
+        errors: NDArray[np.float64],
+        user: int,
+        item: int,
+        reg: float,
+        lr: float,
+        max_grad_norm: float | None,
+    ):
+        grad_P = 2 * lr * (errors * self.Q[item, :] - reg * self.P[user, :])
+        grad_Q = 2 * lr * (errors * self.P[user, :] - reg * self.Q[item, :])
+
+        self._clip_gradients(grad_P, max_grad_norm)
+        self._clip_gradients(grad_Q, max_grad_norm)
+
+        self.P[user, :] += grad_P
+        self.Q[item, :] += grad_Q

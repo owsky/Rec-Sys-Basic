@@ -1,5 +1,9 @@
 {
   "python.analysis.typeCheckingMode": "basic",
+  "python.analysis.autoFormatStrings": true,
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.downloadStubs": true,
+  "python.analysis.diagnosticMode": "workspace",
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter",
   },

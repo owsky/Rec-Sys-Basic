@@ -1,11 +1,12 @@
 import numpy as np
 from numpy.typing import NDArray
-from scipy.sparse import coo_matrix
+from scipy.sparse import coo_array
+from MF_models import R_type
 
 
-def convert_dataset(dataset: coo_matrix | NDArray[np.float64], label: str):
-    if isinstance(dataset, coo_matrix) and "dense" in label.lower():
+def convert_dataset(dataset: R_type, label: str) -> R_type:
+    if isinstance(dataset, coo_array) and "dense" in label.lower():
         return dataset.toarray()
     elif "sparse" in label.lower():
-        return coo_matrix(dataset)
+        return coo_array(dataset)
     return dataset

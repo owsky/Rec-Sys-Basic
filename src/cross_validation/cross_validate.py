@@ -5,18 +5,18 @@ from joblib import Parallel, delayed
 from tqdm import tqdm
 from numpy.typing import NDArray
 import numpy as np
-from MF_models import all_models_type
+from MF_models import All_models_type
 from data.convert_dataset import convert_dataset
 
 
 def cross_validate(
-    model: all_models_type,
+    model: All_models_type,
     label: str,
     R: NDArray[np.float64],
-    n_factors_range,
-    lr_range,
-    epochs_range,
-    reg_range,
+    n_factors_range: List[int],
+    lr_range: List[float],
+    epochs_range: List[int],
+    reg_range: List[float],
     batch_size_range: List[int],
     n_folds=5,
 ):

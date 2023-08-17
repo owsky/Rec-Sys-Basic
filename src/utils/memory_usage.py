@@ -1,6 +1,6 @@
 from pympler.asizeof import asizeof
 from utils import sparsity
-from scipy.sparse import coo_array, coo_matrix
+from scipy.sparse import coo_array
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -11,7 +11,7 @@ def memory_usage(dataset: coo_array):
     print(f"Sparsity of dataset: {spar:.3f}")
 
     df_mem = asizeof(pd.DataFrame(dataset_arr)) / 1024 / 1024 / 1024
-    coo_array_mem = asizeof(coo_matrix(dataset)) / 1024 / 1024 / 1024
+    coo_array_mem = asizeof(dataset) / 1024 / 1024 / 1024
     dense_mem = asizeof(dataset_arr) / 1024 / 1024 / 1024
     csr_mem = asizeof(dataset.tocsr()) / 1024 / 1024 / 1024
 

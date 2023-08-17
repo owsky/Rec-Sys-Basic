@@ -1,13 +1,13 @@
-from MF_models import MF_base
+from MF_models import MF_base, R_type
 from numpy.typing import NDArray
 import numpy as np
-from scipy.sparse import dok_array, coo_matrix, csr_matrix
+from .default_params import DefaultParams
 
 
 def train_test(
     model: MF_base,
-    hyper_params,
-    trainset: NDArray[np.float64] | coo_matrix | dok_array | csr_matrix,
+    hyper_params: DefaultParams,
+    trainset: R_type,
     testset: NDArray[np.float64],
     seed: int | None = None,
 ):

@@ -2,28 +2,12 @@ from numpy.typing import NDArray
 import numpy as np
 from .MF_base import MF_base
 from scipy.sparse.linalg import svds
-from scipy.sparse import coo_matrix
+from scipy.sparse import coo_array
 
 
 class MF_SVD_all(MF_base):
-    def _clip_gradients(self, gradient, max_grad_norm):
-        if max_grad_norm is not None:
-            norm = np.linalg.norm(gradient)
-            if norm > max_grad_norm:
-                gradient *= max_grad_norm / norm
-
-    def _update_gradients(self, error, u, i):
-        grad_P = 2 * self.lr * (error * self.Q[i, :] - self.reg * self.P[u, :])
-        grad_Q = 2 * self.lr * (error * self.P[u, :] - self.reg * self.Q[i, :])
-
-        self._clip_gradients(grad_P, self.max_grad_norm)
-        self._clip_gradients(grad_Q, self.max_grad_norm)
-
-        self.P[u, :] += grad_P
-        self.Q[i, :] += grad_Q
-
     def _svd_decompose(
-        self, R: NDArray[np.float64] | coo_matrix, n_factors: int, seed: int | None
+        self, R: NDArray[np.float64] | coo_array, n_factors: int, seed: int | None
     ):
         U, S, V = (
             svds(R, k=n_factors, random_state=seed)
@@ -41,7 +25,7 @@ class MF_SVD_all(MF_base):
 
     def fit(
         self,
-        R: NDArray[np.float64] | coo_matrix,
+        R: NDArray[np.float64] | coo_array,
         n_factors: int = 10,
         epochs: int = 80,
         lr: float = 0.00005,
@@ -56,19 +40,33 @@ class MF_SVD_all(MF_base):
         self.max_grad_norm = max_grad_norm
         self._svd_decompose(R, n_factors, seed)
 
-        if isinstance(R, coo_matrix):
+        if isinstance(R, coo_array):
             for _ in range(epochs):
                 lr *= lr_decay_factor
                 for u, i, r in zip(R.row, R.col, R.data):
-                    error = r - self.predict(u, i)
-                    self._update_gradients(error, u, i)
+                    errors = r - self.predict(u, i)
+                    self._update_features(
+                        errors=errors,
+                        user=u,
+                        item=i,
+                        reg=self.reg,
+                        lr=self.lr,
+                        max_grad_norm=self.max_grad_norm,
+                    )
         else:
             users, items = np.nonzero(R)
             for _ in range(epochs):
                 lr *= lr_decay_factor
                 for u, i in zip(users, items):
-                    error = R[u, i] - self.predict(u, i)
-                    self._update_gradients(error, u, i)
+                    errors = R[u, i] - self.predict(u, i)
+                    self._update_features(
+                        errors=errors,
+                        user=u,
+                        item=i,
+                        reg=self.reg,
+                        lr=self.lr,
+                        max_grad_norm=self.max_grad_norm,
+                    )
 
     def predict(self, user_idx: int, item_idex: int) -> float:
         return np.dot(self.P[user_idx, :], np.dot(self.S, self.Q[item_idex, :]))

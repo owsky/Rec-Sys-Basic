@@ -7,9 +7,17 @@ from utils import runtime
 from tqdm import tqdm
 from MF_models import *
 from .default_params import *
+import numpy as np
+from numpy.typing import NDArray
 
 
-def aux(model, hyper_params, label: str, trainset, testset):
+def aux(
+    model: All_models_type,
+    hyper_params: DefaultParams,
+    label: str,
+    trainset: R_type,
+    testset: NDArray[np.float64],
+):
     trainset = convert_dataset(trainset, label)
     return label, *runtime(
         lambda: train_test(
@@ -22,6 +30,7 @@ def runtimes_all(dataset: coo_array):
     trainset, testset = random_train_test_split(
         dataset, test_percentage=0.2, random_state=42
     )
+    trainset = coo_array(trainset)
     testset = testset.toarray()
 
     dense_sgd = MF_GD_all()
