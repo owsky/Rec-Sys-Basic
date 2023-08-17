@@ -1,5 +1,3 @@
-import numpy as np
-from numpy.typing import NDArray
 from scipy.sparse import coo_array
 from MF_models import R_type
 

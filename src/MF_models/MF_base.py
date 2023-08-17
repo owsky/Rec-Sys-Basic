@@ -37,14 +37,13 @@ class MF_base(ABC):
         user_item_matrix: NDArray[np.float64],
         error_function: Callable[[float, float], float],
     ) -> List[float]:
-        num_users, num_items = user_item_matrix.shape
         errors = []
-        for user_id in range(num_users):
-            for item_id in range(num_items):
-                if user_item_matrix[user_id, item_id] != 0:
-                    predicted_rating = self.predict(user_id, item_id)
-                    true_rating = user_item_matrix[user_id, item_id]
-                    errors.append(error_function(true_rating, predicted_rating))
+        users, items = np.nonzero(user_item_matrix)
+        for user_id, item_id in zip(users, items):
+            if user_item_matrix[user_id, item_id] != 0:
+                predicted_rating = self.predict(user_id, item_id)
+                true_rating = float(user_item_matrix[user_id, item_id])
+                errors.append(error_function(true_rating, predicted_rating))
         return errors
 
     def accuracy_mae(self, user_item_matrix: NDArray[np.float64]) -> float:

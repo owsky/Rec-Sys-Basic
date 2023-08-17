@@ -11,7 +11,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 
-def aux(
+def runtimes_all_helper(
     model: All_models_type,
     hyper_params: DefaultParams,
     label: str,
@@ -33,14 +33,14 @@ def runtimes_all(dataset: coo_array):
     trainset = coo_array(trainset)
     testset = testset.toarray()
 
-    dense_sgd = MF_GD_all()
-    dense_batch = MF_GD_all()
-    dense_mini_batch = MF_GD_all()
-    dense_svd = MF_SVD_all()
-    sparse_sgd = MF_GD_all()
-    sparse_batch = MF_GD_all()
-    sparse_mini_batch = MF_GD_all()
-    sparse_svd = MF_SVD_all()
+    dense_sgd = MF_GD()
+    dense_batch = MF_GD()
+    dense_mini_batch = MF_GD()
+    dense_svd = MF_SVD()
+    sparse_sgd = MF_GD()
+    sparse_batch = MF_GD()
+    sparse_mini_batch = MF_GD()
+    sparse_svd = MF_SVD()
 
     models = [
         (dense_sgd, DenseStochasticParams, "Dense SGD"),
@@ -54,7 +54,7 @@ def runtimes_all(dataset: coo_array):
     ]
 
     results = map(
-        lambda tup: aux(tup[0], tup[1], tup[2], trainset, testset),
+        lambda tup: runtimes_all_helper(tup[0], tup[1], tup[2], trainset, testset),
         tqdm(iterable=models, desc="Computing training runtimes"),
     )
 

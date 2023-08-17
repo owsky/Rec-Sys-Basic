@@ -5,7 +5,7 @@ from scipy.sparse.linalg import svds
 from scipy.sparse import coo_array
 
 
-class MF_SVD_all(MF_base):
+class MF_SVD(MF_base):
     def _svd_decompose(
         self, R: NDArray[np.float64] | coo_array, n_factors: int, seed: int | None
     ):

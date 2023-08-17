@@ -8,11 +8,10 @@ from utils import memory_usage
 def main():
     assert sys.argv[1], "Wrong usage: provide dataset path"
     dataset_path = sys.argv[1]
-    dataset = load_data(dataset_path, limit_row=500)
-
-    # memory_usage(dataset)
+    dataset = load_data(dataset_path, limit_row=-1)
 
     runtimes_all(dataset)
+    # memory_usage(dataset)
     # hyper_tune(dataset)
 
 

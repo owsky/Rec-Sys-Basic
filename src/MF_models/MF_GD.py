@@ -4,7 +4,7 @@ from .MF_base import MF_base
 from scipy.sparse import coo_array
 
 
-class MF_GD_all(MF_base):
+class MF_GD(MF_base):
     def _update_features_batch(
         self, errors: NDArray[np.float64], u: NDArray[np.int64], i: NDArray[np.int64]
     ):

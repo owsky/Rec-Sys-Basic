@@ -15,14 +15,22 @@ def memory_usage(dataset: coo_array):
     dense_mem = asizeof(dataset_arr) / 1024 / 1024 / 1024
     csr_mem = asizeof(dataset.tocsr()) / 1024 / 1024 / 1024
 
-    data_structures = ["Pandas DataFrame", "Numpy Array", "COO Matrix", "CSR Matrix"]
+    data_structures = [
+        "Pandas DataFrame",
+        "Numpy Array",
+        "COO Matrix",
+        "CSR Matrix",
+    ]
     memory_usage = [df_mem, dense_mem, coo_array_mem, csr_mem]
 
-    plt.bar(data_structures, memory_usage, color=["purple", "red", "green", "orange"])
+    plt.bar(
+        data_structures,
+        memory_usage,
+        color=["purple", "red", "green", "orange", "black"],
+    )
 
     plt.xlabel("Data Structures")
     plt.ylabel("Memory Usage (gigabytes)")
     plt.title("Memory Usage of Data Structures")
 
-    # Show the plot
     plt.show()

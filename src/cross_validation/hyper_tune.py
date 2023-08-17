@@ -7,16 +7,16 @@ from MF_models import *
 def hyper_tune(dataset: coo_array):
     R = dataset.toarray()
 
-    dense_sgd = MF_GD_all()
-    dense_batch = MF_GD_all()
-    dense_mini_batch = MF_GD_all()
-    dense_svd = MF_SVD_all()
-    sparse_sgd = MF_GD_all()
-    sparse_batch = MF_GD_all()
-    sparse_mini_batch = MF_GD_all()
-    sparse_svd = MF_SVD_all()
+    dense_sgd = MF_GD()
+    dense_batch = MF_GD()
+    dense_mini_batch = MF_GD()
+    dense_svd = MF_SVD()
+    sparse_sgd = MF_GD()
+    sparse_batch = MF_GD()
+    sparse_mini_batch = MF_GD()
+    sparse_svd = MF_SVD()
 
-    models: list[tuple[MF_SVD_all | MF_GD_all, str]] = [
+    models: list[tuple[MF_SVD | MF_GD, str]] = [
         (dense_sgd, "Dense SGD"),
         (dense_batch, "Dense Batch"),
         (dense_mini_batch, "Dense Mini Batch"),
