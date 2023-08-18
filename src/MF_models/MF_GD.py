@@ -5,127 +5,88 @@ from scipy.sparse import coo_array
 
 
 class MF_GD(MF_base):
-    def _update_features_batch(
-        self, errors: NDArray[np.float64], u: NDArray[np.int64], i: NDArray[np.int64]
-    ):
-        grad_P = (
-            2
-            * self.lr
-            * (errors[:, np.newaxis] * self.Q[i, :] - self.reg * self.P[u, :])
-        )
-        grad_Q = (
-            2
-            * self.lr
-            * (errors[:, np.newaxis] * self.P[u, :] - self.reg * self.Q[i, :])
-        )
-
-        self._clip_gradients(grad_P, self.max_grad_norm)
-        self._clip_gradients(grad_Q, self.max_grad_norm)
-
-        self.P[u, :] += grad_P
-        self.Q[i, :] += grad_Q
-
     def sgd(self, R: NDArray[np.float64] | coo_array):
-        if isinstance(R, coo_array):
-            for _ in range(self.epochs):
-                self.lr *= self.lr_decay_factor
-                for u, i, r in zip(R.row, R.col, R.data):
-                    errors = r - self.predict(u, i)
-                    self._update_features(
-                        errors=errors,
-                        user=u,
-                        item=i,
-                        reg=self.reg,
-                        lr=self.lr,
-                        max_grad_norm=self.max_grad_norm,
-                    )
-        else:
-            users, items = np.nonzero(R)
-            for _ in range(self.epochs):
-                self.lr *= self.lr_decay_factor
-                for u, i in zip(users, items):
-                    errors = R[u, i] - self.predict(u, i)
+        for _ in range(self.epochs):
+            self.lr *= self.lr_decay_factor
 
-                    self._update_features(
-                        errors=errors,
-                        user=u,
-                        item=i,
-                        reg=self.reg,
-                        lr=self.lr,
-                        max_grad_norm=self.max_grad_norm,
-                    )
+            it: zip[tuple[int, int]] | zip[tuple[int, int, int]]
+            if isinstance(R, coo_array):
+                it = zip(R.row, R.col, R.data)
+            else:
+                users, items = np.nonzero(R)
+                it = zip(users, items)
+
+            for tup in it:
+                if isinstance(R, coo_array) and len(tup) == 3:
+                    u, i, r = tup
+                elif not isinstance(R, coo_array) and len(tup) == 2:
+                    u, i = tup
+                    r = R[u, i]
+                else:
+                    raise RuntimeError("Something wrong occurred")
+                error = r - self.predict(u, i)
+                self._update_features(
+                    errors=error,
+                    user=u,
+                    item=i,
+                    reg=self.reg,
+                    lr=self.lr,
+                    max_grad_norm=self.max_grad_norm,
+                )
 
     def mini_batch(self, R: NDArray[np.float64] | coo_array):
-        if isinstance(R, coo_array):
-            data = list(zip(R.row, R.col, R.data))
+        data = (
+            list(zip(R.row, R.col, R.data))
+            if isinstance(R, coo_array)
+            else np.transpose(np.nonzero(R))
+        )
 
-            for _ in range(self.epochs):
-                self.lr *= self.lr_decay_factor
-                np.random.shuffle(data)
+        for _ in range(self.epochs):
+            self.lr *= self.lr_decay_factor
+            np.random.shuffle(data)
 
-                for i in range(0, len(data), self.batch_size):
+            for i in range(0, len(data), self.batch_size):
+                if isinstance(R, coo_array):
                     batch = data[i : i + self.batch_size]
-
                     users = np.array([user for user, _, _ in batch])
                     items = np.array([item for _, item, _ in batch])
                     ratings = np.array([rating for _, _, rating in batch])
+                else:
+                    batch_indices = data[i : i + self.batch_size]
+                    users, items = (batch_indices[:, 0], batch_indices[:, 1])  # type: ignore
+                    ratings = R[users, items]
 
-                    errors = ratings - np.sum(
-                        self.P[users, :] * self.Q[items, :], axis=1
-                    )
-                    self._update_features_batch(errors, users, items)
-        else:
-            nonzero_indices = np.transpose(np.nonzero(R))
-            total_samples = len(nonzero_indices)
-            shuffled_indices = np.random.permutation(total_samples)
-
-            for _ in range(self.epochs):
-                self.lr *= self.lr_decay_factor
-
-                for i in range(0, len(nonzero_indices), self.batch_size):
-                    batch_indices = shuffled_indices[i : i + self.batch_size]
-                    if len(batch_indices) < self.batch_size:
-                        break
-                    batch_user_indices, batch_item_indices = (
-                        nonzero_indices[batch_indices, 0],
-                        nonzero_indices[batch_indices, 1],
-                    )
-
-                    batch_R = R[batch_user_indices, batch_item_indices]
-
-                    predicted_ratings = np.sum(
-                        self.P[batch_user_indices, :] * self.Q[batch_item_indices, :],
-                        axis=1,
-                    )
-
-                    errors = batch_R - predicted_ratings
-                    self._update_features_batch(
-                        errors, batch_user_indices, batch_item_indices
-                    )
+                predictions = np.sum(self.P[users, :] * self.Q[items, :], axis=1)
+                errors = ratings - predictions
+                self._update_features(
+                    errors=errors[:, np.newaxis],
+                    user=users,
+                    item=items,
+                    reg=self.reg,
+                    lr=self.lr,
+                    max_grad_norm=self.max_grad_norm,
+                )
 
     def process_batch(self, R: NDArray[np.float64] | coo_array):
         if isinstance(R, coo_array):
-            non_zero_row_indices, non_zero_col_indices = R.nonzero()
-            non_zero_values = R.data
-
-            for _ in range(self.epochs):
-                self.lr *= self.lr_decay_factor
-                errors = non_zero_values - np.sum(
-                    self.P[non_zero_row_indices, :] * self.Q[non_zero_col_indices, :],
-                    axis=1,
-                )
-
-                self._update_features_batch(
-                    errors, non_zero_row_indices, non_zero_col_indices
-                )
+            users, items = R.nonzero()
+            ratings = R.data
         else:
-            non_zero = np.nonzero(R)
-            for _ in range(self.epochs):
-                self.lr *= self.lr_decay_factor
-                errors = R[non_zero] - np.sum(
-                    self.P[non_zero[0], :] * self.Q[non_zero[1], :], axis=1
-                )
-                self._update_features_batch(errors, non_zero[0], non_zero[1])
+            users, items = np.nonzero(R)
+            ratings = R[users, items]
+
+        for _ in range(self.epochs):
+            self.lr *= self.lr_decay_factor
+            errors = ratings - np.sum(self.P[users, :] * self.Q[items, :], axis=1)
+
+            self._update_features(
+                errors=errors[:, np.newaxis],
+                user=users,
+                item=items,
+                reg=self.reg,
+                lr=self.lr,
+                max_grad_norm=self.max_grad_norm,
+            )
 
     def fit(
         self,

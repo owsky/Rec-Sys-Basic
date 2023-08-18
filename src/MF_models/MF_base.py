@@ -70,9 +70,9 @@ class MF_base(ABC):
 
     def _update_features(
         self,
-        errors: NDArray[np.float64],
-        user: int,
-        item: int,
+        errors: float | NDArray[np.float64],
+        user: int | NDArray[np.int64],
+        item: int | NDArray[np.int64],
         reg: float,
         lr: float,
         max_grad_norm: float | None,

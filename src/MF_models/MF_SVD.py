@@ -40,33 +40,33 @@ class MF_SVD(MF_base):
         self.max_grad_norm = max_grad_norm
         self._svd_decompose(R, n_factors, seed)
 
-        if isinstance(R, coo_array):
-            for _ in range(epochs):
-                lr *= lr_decay_factor
-                for u, i, r in zip(R.row, R.col, R.data):
-                    errors = r - self.predict(u, i)
-                    self._update_features(
-                        errors=errors,
-                        user=u,
-                        item=i,
-                        reg=self.reg,
-                        lr=self.lr,
-                        max_grad_norm=self.max_grad_norm,
-                    )
-        else:
-            users, items = np.nonzero(R)
-            for _ in range(epochs):
-                lr *= lr_decay_factor
-                for u, i in zip(users, items):
-                    errors = R[u, i] - self.predict(u, i)
-                    self._update_features(
-                        errors=errors,
-                        user=u,
-                        item=i,
-                        reg=self.reg,
-                        lr=self.lr,
-                        max_grad_norm=self.max_grad_norm,
-                    )
+        for _ in range(epochs):
+            self.lr *= lr_decay_factor
+
+            it: zip[tuple[int, int]] | zip[tuple[int, int, int]]
+            if isinstance(R, coo_array):
+                it = zip(R.row, R.col, R.data)
+            else:
+                users, items = np.nonzero(R)
+                it = zip(users, items)
+
+            for tup in it:
+                if isinstance(R, coo_array) and len(tup) == 3:
+                    u, i, r = tup
+                elif not isinstance(R, coo_array) and len(tup) == 2:
+                    u, i = tup
+                    r = R[u, i]
+                else:
+                    raise RuntimeError("Something wrong occurred")
+                error = r - self.predict(u, i)
+                self._update_features(
+                    errors=error,
+                    user=u,
+                    item=i,
+                    reg=self.reg,
+                    lr=self.lr,
+                    max_grad_norm=self.max_grad_norm,
+                )
 
     def predict(self, user_idx: int, item_idex: int) -> float:
         return np.dot(self.P[user_idx, :], np.dot(self.S, self.Q[item_idex, :]))

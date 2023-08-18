@@ -11,8 +11,5 @@ def train_test(
     testset: NDArray[np.float64],
     seed: int | None = None,
 ):
-    if seed != None:
-        model.fit(trainset, *hyper_params, seed=seed)
-    else:
-        model.fit(trainset, *hyper_params)
+    model.fit(trainset, *hyper_params, seed=seed)
     return model.accuracy_mae(testset), model.accuracy_rmse(testset)
